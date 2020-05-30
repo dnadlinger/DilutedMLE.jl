@@ -1,0 +1,10 @@
+name = "DilutedMLE"
+uuid = "a7d87694-4c15-11e9-38a3-4341453c3482"
+authors = ["David Nadlinger <code@klickverbot.at>"]
+version = "0.1.0"
+
+[deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+QuantumOptics = "6e0679c1-51ea-5a7c-ac74-d61b76210b0c"
+RandomQuantum = "7779672a-5d86-5706-9bd0-ace5ecbc1638"
