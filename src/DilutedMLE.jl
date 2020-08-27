@@ -32,8 +32,8 @@ diluted fixed point iteration method.
 
 Returns a tuple `(ρ, did_converge, number_of_iterations)`.
 """
-function diluted_mle(povms::Vector{DenseOperator}, obs_weights::Vector{Float64},
-	ρ0::DenseOperator; maxit=100000, tol=1e-9, ϵ=10
+function diluted_mle(povms::Vector{DenseOpType}, obs_weights::Vector{Float64},
+	ρ0::DenseOpType; maxit=100000, tol=1e-9, ϵ=10
 )
     # TODO: Clean up while keeping in-place properties.
     ρ = copy(ρ0)
