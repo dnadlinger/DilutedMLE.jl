@@ -3,7 +3,7 @@ module DilutedMLE
 export diluted_mle
 
 using LinearAlgebra
-using QuantumOptics
+using QuantumOpticsBase
 
 """
 Calculate expectation value of `povm` given state `ρ`.

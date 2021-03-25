@@ -4,7 +4,7 @@
 # FIXME: This currently outputs plots. Instead, we should compare the distribution of
 # MLE result/ground truth distances to some bounds for automated regression testing.
 
-using DilutedMLE, Distributions, QuantumOptics, RandomQuantum
+using DilutedMLE, Distributions, QuantumOpticsBase, RandomQuantum
 
 trnorm(ρ) = norm(svdvals(ρ.data), 1)
 
