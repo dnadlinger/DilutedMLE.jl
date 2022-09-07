@@ -12,19 +12,22 @@ This is an optimised version of QuantumOptics.expect for dense operators, which
 significantly increases `diluted_mle()` performance.
 """
 function expect_inline(povm, ρ)
-    sum = zero(povm[1, 1])
+    sum = zero(real(povm[1, 1]))
     n = size(povm)[1]
     #@assert size(povm) == (n, n)
     #@assert size(ρ) == (n, n)
     for i in 1:n
         for j in 1:n
-            @inbounds sum += povm[i, j] * ρ[j, i]
+            @inbounds sum += real(povm[i, j] * ρ[j, i])
         end
     end
     #@assert imag(sum) ≈ 0
-    real(sum)
+    sum
 end
 
+function normalize_tr!(r)
+    r .*= 1 / tr(r)
+end
 
 """
 Estimate density matrix from given POVM elements and associated weights using a
@@ -32,36 +35,36 @@ diluted fixed point iteration method.
 
 Returns a tuple `(ρ, did_converge, number_of_iterations)`.
 """
-function diluted_mle(povms::Vector{DenseOpType}, obs_weights::Vector{Float64},
-	ρ0::DenseOpType; maxit=100000, tol=1e-9, ϵ=10
-)
+function diluted_mle(povm_ops::Vector{T}, obs_weights::Vector{Float64},
+       ρ0::T; maxit=100000, tol=1e-9, ϵ=10
+) where T <: DenseOpType
     # TODO: Clean up while keeping in-place properties.
-    ρ = copy(ρ0)
-    normalize!(ρ)
+    @assert length(povm_ops) == length(obs_weights)
+    povms = [p.data for p in povm_ops]
+    ρ = ρ0.data
+    normalize_tr!(ρ)
     r = copy(ρ)
-    reye = Matrix{eltype(r.data)}(I, size(r.data))
-    ρtmp = copy(ρ)
-    ρprev = copy(ρ)
+    reye = Matrix{eltype(r)}(I, size(r))
+    ρtmp = copy(r)
+    ρprev = copy(r)
     for it in 1:maxit
-        copyto!(ρprev.data, ρ.data)
+        copyto!(ρprev, ρ)
 
-        copyto!(r.data, reye)
-        for (povm, obs_weight) in zip(povms, obs_weights)
-            factor = ϵ * obs_weight / expect_inline(povm.data, ρ.data)
-            for i in 1:length(r.data)
-                @inbounds r.data[i] += factor * povm.data[i]
-            end
+        copyto!(r, reye)
+        @inbounds for i in eachindex(povms)
+            factor = ϵ * obs_weights[i] / expect_inline(povms[i], ρ)
+            axpy!(factor, povms[i], r)
         end
-        r.data ./= 1 + ϵ
-        mul!(ρtmp.data, ρ.data, r.data)
-        mul!(ρ.data, r.data, ρtmp.data)
-        normalize!(ρ)
+        r .*= 1 / (1 + ϵ)
+        mul!(ρtmp, ρ, r)
+        mul!(ρ, r, ρtmp)
+        normalize_tr!(ρ)
 
-        if norm((ρ - ρprev).data) < tol
-            return ρ, true, it
+        if norm(ρ - ρprev) < tol
+            return DenseOperator(ρ0.basis_l, ρ0.basis_r, ρ), true, it
         end
     end
-    return ρ, false, maxit
+    return DenseOperator(ρ0.basis_l, ρ0.basis_r, ρ), false, maxit
 end
 
 end
