@@ -55,7 +55,7 @@ function diluted_mle(povm_ops::Vector{T}, obs_weights::Vector{Float64},
             factor = ϵ * obs_weights[i] / expect_inline(povms[i], ρ)
             axpy!(factor, povms[i], r)
         end
-        r .*= 1 / (1 + ϵ)
+        # Elided normalization of r, as we normalize_tr!(ρ) anyway.
         mul!(ρtmp, ρ, r)
         mul!(ρ, r, ρtmp)
         normalize_tr!(ρ)
